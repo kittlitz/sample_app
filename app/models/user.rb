@@ -1,5 +1,5 @@
 # == Schema Information
-# Schema version: 20110322161217
+# Schema version: 20110322190323
 #
 # Table name: users
 #
@@ -9,6 +9,7 @@
 #  created_at         :datetime
 #  updated_at         :datetime
 #  encrypted_password :string(255)
+#  salt               :string(255)
 #
 
 require 'digest'
@@ -36,10 +37,18 @@ class User < ActiveRecord::Base
     encrypted_password == encrypt(submitted_password)
   end
 
-  def self.authenticate(email,submitted_password)
-    user = find_by_email(email)
-    return nil if user.nil?
-    return user if user.has_password?(submitted_password)
+  class << self
+
+    def authenticate(email,submitted_password)
+      user = find_by_email(email)
+      (user && user.has_password?(submitted_password)) ? user : nil
+    end
+
+    def authenticate_with_salt(id,cookie_salt)
+      user = find_by_id(id)
+      (user && user.salt == cookie_salt) ? user : nil
+    end
+
   end
 
   private
