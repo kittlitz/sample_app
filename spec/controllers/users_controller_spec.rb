@@ -93,7 +93,7 @@ describe UsersController do
         end.should change(User, :count).by(1)
       end
 
-      it 'should erdirect to the user show page' do
+      it 'should redirect to the user show page' do
         post :create, :user => @attr
         response.should redirect_to(user_path(assigns(:user)))
       end
@@ -185,16 +185,35 @@ describe UsersController do
       @user = Factory(:user)
     end
 
-    it "should deny access to 'edit'" do
-      get :edit, :id => @user
-      response.should redirect_to(signin_path)
+    describe 'for users not signed in ' do
+      it "should deny access to 'edit'" do
+        get :edit, :id => @user
+        response.should redirect_to(signin_path)
+      end
+
+      it "should deny access to 'update'" do
+        get :update, :id => @user, :user => {}
+        response.should redirect_to(signin_path)
+        flash[:notice].should =~ /sign in/i
+      end
     end
 
-    it "should deny access to 'update'" do
-      get :update, :id => @user, :user => {}
-      response.should redirect_to(signin_path)
-      flash[:notice].should =~ /sign in/i
-    end
+    describe 'for signed-in users' do
+      before(:each) do
+        @wrong_user = Factory(:user, :email => "wrong@example.net")
+        test_sign_in(@wrong_user)
+      end
 
+      it "should require matching users for 'edit'" do
+        get :edit, :id => @user
+        response.should redirect_to(root_path)
+      end
+
+      it "should require matching users for 'update'" do
+        put :update, :id => @user
+        response.should redirect_to(root_path)
+      end
+
+    end
   end
 end
