@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+  before_filter :authenticate, :only => [:edit,:update]
 
   def new
     @user = User.new
@@ -38,6 +39,12 @@ class UsersController < ApplicationController
       @title = 'Edit user'
       render 'edit'
     end
+  end
+
+  private
+
+  def authenticate
+    deny_access unless signed_in?
   end
 
 end
