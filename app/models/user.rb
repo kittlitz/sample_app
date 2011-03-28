@@ -40,13 +40,17 @@ class User < ActiveRecord::Base
 
   before_save :encrypt_password
 
+  # Defines 'admin' class method to get all the admin users
+  scope :admin, where(:admin => true)
+
   def has_password?(submitted_password)
     encrypted_password == encrypt(submitted_password)
   end
 
   def feed
     # self.microposts would work
-    Micropost.where("user_id=?",id)
+    # Micropost.where("user_id=?",id)
+    Micropost.from_users_followed_by(self)
   end
 
   def following?(followed)
