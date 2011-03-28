@@ -1,8 +1,16 @@
 SampleApp::Application.routes.draw do
 
-  resources :users
+  #resources :users
+  # Creates routes to recognize /users/1/following, /users/1/fllowers etc.
+  resources :users do
+    member do
+      get :following, :followers
+    end
+  end
+
   resources :sessions, :only => [:new, :create, :destroy]
   resources :microposts, :only => [:create, :destroy]
+  resources :relationships, :only => [:create, :destroy]
 
   root :to => 'pages#home'
 
